@@ -46,6 +46,15 @@ jobs:
           echo "----- generated debian/control -----"
           cat debian/control
 
+      - name: Inspect releng-build-package expectations
+        run: |
+          # It failed with "pathspec 'origin/' did not match" — it derives the
+          # branch from CircleCI env vars that do not exist on GitHub Actions.
+          echo "--- which ---"; which releng-build-package
+          echo "--- script ---"; cat "$(which releng-build-package)" | head -80
+          echo "--- env vars referenced ---"
+          grep -oE '\$\{?[A-Z_]{3,}' "$(which releng-build-package)" | sort -u | head -40
+
       - name: Build kernel packages
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
