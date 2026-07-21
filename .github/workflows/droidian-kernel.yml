@@ -46,8 +46,24 @@ jobs:
           echo "----- generated debian/control -----"
           cat debian/control
 
+      - name: Show how releng resolves the branch
+        run: |
+          # CIRCLE_BRANCH alone was not enough — dump the actual resolution
+          # logic so the next attempt is informed rather than another guess.
+          sed -n '/BRANCH=/,+4p;/CIRCLECI/,+4p;/TRAVIS/,+4p;/git checkout/,+3p' \
+            "$(which releng-build-package)" | head -60
+
       - name: Build kernel packages
         env:
+          # Impersonate every CI the script knows about, including the
+          # detection flags each one sets, since the branch variables alone
+          # were ignored.
+          CI: "true"
+          CIRCLECI: "true"
+          TRAVIS: "true"
+          TRAVIS_BRANCH: droidian-taos
+          DRONE_BRANCH: droidian-taos
+          BUILD_SOURCEBRANCH: refs/heads/droidian-taos
           # releng-build-package supports Travis/CircleCI/Drone/Azure but not
           # GitHub Actions: with none of their branch variables set it resolves
           # the ref to an empty string and dies with
