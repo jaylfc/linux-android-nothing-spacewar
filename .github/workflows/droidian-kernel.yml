@@ -46,13 +46,6 @@ jobs:
           echo "----- generated debian/control -----"
           cat debian/control
 
-      - name: Find the LLVM_IAS knob in the kernel snippet
-        run: |
-          echo "=====SNIPPET====="
-          grep -nE "LLVM|IAS|BUILD_CC|BUILD_COMMAND|KERNEL_BUILD" \
-            /usr/share/linux-packaging-snippets/kernel-snippet.mk || true
-          echo "=====END====="
-
       - name: Build kernel packages
         env:
           # IS_CONTAINER=true is releng-build-package's "build from the current
