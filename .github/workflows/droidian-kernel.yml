@@ -46,19 +46,18 @@ jobs:
           echo "----- generated debian/control -----"
           cat debian/control
 
-      - name: Inspect releng-build-package expectations
-        run: |
-          # It failed with "pathspec 'origin/' did not match" — it derives the
-          # branch from CircleCI env vars that do not exist on GitHub Actions.
-          echo "--- which ---"; which releng-build-package
-          echo "--- script ---"; cat "$(which releng-build-package)" | head -80
-          echo "--- env vars referenced ---"
-          grep -oE '\$\{?[A-Z_]{3,}' "$(which releng-build-package)" | sort -u | head -40
-
       - name: Build kernel packages
+        env:
+          # releng-build-package supports Travis/CircleCI/Drone/Azure but not
+          # GitHub Actions: with none of their branch variables set it resolves
+          # the ref to an empty string and dies with
+          # "pathspec 'origin/' did not match any file(s)".
+          CIRCLE_BRANCH: droidian-taos
+          RELENG_HOST_ARCH: arm64
+          RELENG_FULL_BUILD: "yes"
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          RELENG_HOST_ARCH="arm64" releng-build-package
+          releng-build-package
 
       - name: Collect artifacts
         if: always()
