@@ -46,12 +46,14 @@ jobs:
           echo "----- generated debian/control -----"
           cat debian/control
 
-      - name: Show how releng resolves the branch
+      - name: Dump the full releng-build-package script
         run: |
-          # CIRCLE_BRANCH alone was not enough — dump the actual resolution
-          # logic so the next attempt is informed rather than another guess.
-          sed -n '/BRANCH=/,+4p;/CIRCLECI/,+4p;/TRAVIS/,+4p;/git checkout/,+3p' \
-            "$(which releng-build-package)" | head -60
+          echo "=====RELENG_SCRIPT_START====="
+          cat "$(which releng-build-package)"
+          echo "=====RELENG_SCRIPT_END====="
+          echo "=====GIT_STATE====="
+          git branch -a
+          git rev-parse --abbrev-ref HEAD
 
       - name: Build kernel packages
         env:
