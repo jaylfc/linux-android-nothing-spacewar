@@ -46,6 +46,14 @@ jobs:
           echo "----- generated debian/control -----"
           cat debian/control
 
+      - name: Dump snippet DTB handling (fast, pre-compile)
+        run: |
+          echo "=====DTB====="
+          sed -n '120,170p' /usr/share/linux-packaging-snippets/kernel-snippet.mk
+          echo "=====KINFO_EXAMPLE====="
+          grep -iE "dtb|prebuilt" /usr/share/linux-packaging-snippets/kernel-info.mk.example || true
+          echo "=====END====="
+
       - name: Build kernel packages
         env:
           # IS_CONTAINER=true is releng-build-package's "build from the current
