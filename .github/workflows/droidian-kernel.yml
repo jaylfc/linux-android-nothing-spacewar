@@ -46,35 +46,21 @@ jobs:
           echo "----- generated debian/control -----"
           cat debian/control
 
-      - name: Dump the full releng-build-package script
-        run: |
-          echo "=====RELENG_SCRIPT_START====="
-          cat "$(which releng-build-package)"
-          echo "=====RELENG_SCRIPT_END====="
-          echo "=====GIT_STATE====="
-          git branch -a
-          git rev-parse --abbrev-ref HEAD
-
       - name: Build kernel packages
         env:
-          # Impersonate every CI the script knows about, including the
-          # detection flags each one sets, since the branch variables alone
-          # were ignored.
-          CI: "true"
-          CIRCLECI: "true"
-          TRAVIS: "true"
-          TRAVIS_BRANCH: droidian-taos
-          DRONE_BRANCH: droidian-taos
-          BUILD_SOURCEBRANCH: refs/heads/droidian-taos
-          # releng-build-package supports Travis/CircleCI/Drone/Azure but not
-          # GitHub Actions: with none of their branch variables set it resolves
-          # the ref to an empty string and dies with
-          # "pathspec 'origin/' did not match any file(s)".
-          CIRCLE_BRANCH: droidian-taos
+          # IS_CONTAINER=true is releng-build-package's "build from the current
+          # directory" mode: it takes the branch from `git rev-parse HEAD`
+          # (Actions already checked out droidian-taos) and SKIPS the
+          # `git checkout origin/$BRANCH` that failed with an empty ref in
+          # every CI-impersonation attempt. This is the path meant for exactly
+          # this situation.
+          IS_CONTAINER: "true"
           RELENG_HOST_ARCH: arm64
-          RELENG_FULL_BUILD: "yes"
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          # Ensure HEAD is a named branch, not detached, so rev-parse returns
+          # a real name rather than "HEAD".
+          git checkout -B droidian-taos
           releng-build-package
 
       - name: Collect artifacts
